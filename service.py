@@ -39,6 +39,7 @@ def SaveUsersToFile(userList):
     return userList
 
 def PRAssignedToUsers(userList, PROwnerName):
+    
     if(len(userList) > 1):
         user0, user0ID = GetDeveloper(userList, PROwnerName)
         user1, user1ID = GetDeveloper(userList, PROwnerName)

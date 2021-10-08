@@ -24,6 +24,4 @@ def GithubEvent():
         service.AssignReviewers(request.json.get('pull_request'), userList)
     return "return"
 
-if __name__ == "__main__":
-    app.run(debug=True)
-    
+if __name__ == "__main__":    app.run(debug=True)
