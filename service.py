@@ -11,20 +11,32 @@ import requests
 import json
 import shutil
 
-
 def SaveUsersToFile(userList):
     AuthorizeGithubInstallation()
     token = os.environ.get('INSTALL_TOKEN')
-    response = requests.get("https://api.github.com/orgs/aau-giraf/teams/2021E/members", headers={
+    response = requests.get("https://api.github.com/orgs/big-testers/teams/2021E/members", headers={
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github.v3+json'
-    }).json()
-    
+    })
+
+    with open('developers.json', 'r+') as file:
+        fileText = file.read()
+        file.seek(0)
+
+        if (fileText == ''):
+            devDict = {}
+        else:
+            devDict = json.loads(fileText)
+
+        for dev in response.json():
+            devDict.update({f'{dev.get("id")}': f'{dev.get("login")}'})
+        
+        file.write(json.dumps(devDict))
+        file.close()
 
     shutil.copy('developers.json', 'dev_stack.json')
     userList = json.loads(open('dev_stack.json', 'r').read())
     return userList
-
 
 def PRAssignedToUsers(userList, PROwnerName):
     if(len(userList) > 1):
@@ -50,7 +62,6 @@ def PRAssignedToUsers(userList, PROwnerName):
 
     return [user0, user1]
 
-
 def GetUsersFromFile(userList):
     with open('dev_stack.json', 'r') as outfile:
         text = outfile.read()
@@ -59,7 +70,6 @@ def GetUsersFromFile(userList):
             return SaveUsersToFile(userList)
         else:
             return json.loads(text)
-
 
 def GetGithubInstallations():
     with open('Github_private_key.pem', 'rb') as pem:
@@ -79,10 +89,9 @@ def GetGithubInstallations():
 
     return response
 
-
 def AuthorizeGithubInstallation():
-    JWT = os.environ.get('JWT')
     installations = GetGithubInstallations()
+    JWT = os.environ.get('JWT')
     response = requests.post(installations[0].get('access_tokens_url'), headers={
         'Authorization': f'Bearer {JWT}',
         'Accept': 'application/vnd.github.v3+json'
@@ -90,14 +99,12 @@ def AuthorizeGithubInstallation():
     if (response.get('token') is not None):
         os.environ['INSTALL_TOKEN'] = response.get('token')
 
-
 def AssignReviewers(pullRequest, userList):
     PRUrl = pullRequest.get('url')
     assignees = PRAssignedToUsers(userList, pullRequest.get('user').get('login'))
     AuthorizeGithubInstallation()
     response = PostReviewers(PRUrl, assignees)
     print(response)
-
 
 def PostReviewers(PRUrl, assignees):
     INSTALL_TOKEN = os.environ.get('INSTALL_TOKEN')

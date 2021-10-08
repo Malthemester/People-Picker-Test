@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, request
@@ -7,6 +8,11 @@ userList = []
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 app = Flask(__name__)
+
+if (not os.path.exists("developers.json")):
+    open('developers.json', 'x').close()
+if (not os.path.exists("dev_stack.json")):
+    open('dev_stack.json', 'x').close()
 
 service.AuthorizeGithubInstallation()
 userList = service.GetUsersFromFile(userList)
