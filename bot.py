@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, request
+import requests
 import service
 
 userList = []
@@ -21,7 +22,10 @@ userList = service.GetUsersFromFile(userList)
 def GithubEvent():
     action = request.json.get('action')
     if (action == 'opened' or action == 'reopened'):
-        service.AssignReviewers(request.json.get('pull_request'), userList)
+        pr = request.json.get('pull_request')
+        if (not bool(pr.get('requested_reviewers')) and not bool(pr.get('assignees'))):
+            service.AssignReviewers(request.json.get('pull_request'), userList)
     return "return"
 
-if __name__ == "__main__":    app.run(debug=True)
+if __name__ == "__main__": 
+    app.run(debug=True)
